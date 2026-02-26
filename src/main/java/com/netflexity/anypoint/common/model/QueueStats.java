@@ -69,10 +69,20 @@ public class QueueStats {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static Long extractLong(Object value) {
         if (value instanceof List<?> list && !list.isEmpty()) {
-            Object last = list.get(list.size() - 1);
-            return last instanceof Number n ? n.longValue() : 0L;
+            // Sum all data points in the time series
+            long sum = 0;
+            for (Object item : list) {
+                if (item instanceof Number n) {
+                    sum += n.longValue();
+                } else if (item instanceof java.util.Map) {
+                    Object v = ((java.util.Map<String, Object>) item).get("value");
+                    if (v instanceof Number n) sum += n.longValue();
+                }
+            }
+            return sum;
         } else if (value instanceof Number n) {
             return n.longValue();
         }
